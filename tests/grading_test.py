@@ -1,4 +1,3 @@
-import sys
 import hashlib
 
 expected = '''f435c0997fd15c22554baf2856141cffef084be0d35af48eb72ba026b66a4a1b
@@ -31,24 +30,27 @@ b8ff72cc22dc047cf4e64ccdeaf7c239c1b8f65bb8cfee438591b3cf71bc9701
 c32f2b1a66f8a79deadb74f533f3075c60a629df343b89e8c4477d40fa960ba8
 '''
 
+
 def normalize(cmd):
     return " ".join(cmd.rstrip('\n').split())
+
 
 def hex(cmd):
     return hashlib.sha256(cmd.encode('utf-8')).hexdigest()
 
 
 def test_git():
-    n_line = 1
     with open("commands.txt") as f:
         cmd = f.readline()
+        print(cmd)
         assert cmd
-        cmd = cmd.rstrip('\n')
         assert "clone" in cmd, f"Incorrect git clone line"
+
         hashes = expected.strip('\n').split('\n')
-        for cmd in f:
-            n_line += 1
-            cmd_hex = hex(normalize(cmd))
-            h = hashes[n_line - 2]
-            assert cmd_hex == h, f"Incorrect git command at line: {n_line}"
-        assert n_line == len(hashes) - 1, f"Not enough git commands, expected {len(hashes)}"
+        for i, cmd in enumerate(f):
+          assert i < len(hashes), f"Too many git commands, expected {len(hashes) + 1} commands"
+          actual_hex = hex(normalize(cmd))
+          expected_hex = hashes[i]
+          assert actual_hex == expected_hex, f"Incorrect git command at line: {i + 1 + 1}"
+        
+        assert i == len(hashes) - 1, f"Too few git commands, expected {len(hashes) + 1} commands"
